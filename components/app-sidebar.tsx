@@ -49,12 +49,7 @@ export function AppSidebar({
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <IconShoppingBag className="size-4" />
               </div>
-              <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate font-semibold">Snapick</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  Office
-                </span>
-              </div>
+              <span className="truncate text-base font-semibold">Snapick</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -62,13 +57,14 @@ export function AppSidebar({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-0.5">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={pathname.startsWith(item.url)}
                     render={<Link href={item.url} />}
+                    className="text-sidebar-foreground/70 data-active:text-sidebar-accent-foreground"
                   >
                     <item.icon />
                     <span>{item.title}</span>

@@ -1,7 +1,13 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import Link from "next/link"
-import { IconNote, IconPlus, IconReceipt } from "@tabler/icons-react"
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconNote,
+  IconPlus,
+  IconReceipt,
+} from "@tabler/icons-react"
 
 import { LiveSearch } from "@/components/live-search"
 import { Button } from "@/components/ui/button"
@@ -243,7 +249,8 @@ export default async function OrdersPage({
         <div className="flex gap-2">
           <Button
             variant="outline"
-            size="sm"
+            size="icon-sm"
+            aria-label="Previous page"
             disabled={page <= 1}
             nativeButton={page <= 1}
             render={
@@ -254,11 +261,12 @@ export default async function OrdersPage({
               ) : undefined
             }
           >
-            Previous
+            <IconChevronLeft />
           </Button>
           <Button
             variant="outline"
-            size="sm"
+            size="icon-sm"
+            aria-label="Next page"
             disabled={page >= pageCount}
             nativeButton={page >= pageCount}
             render={
@@ -269,7 +277,7 @@ export default async function OrdersPage({
               ) : undefined
             }
           >
-            Next
+            <IconChevronRight />
           </Button>
         </div>
       </div>
