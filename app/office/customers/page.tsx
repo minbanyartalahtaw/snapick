@@ -1,7 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { IconChevronRight, IconSearch, IconUsers } from "@tabler/icons-react"
+import {
+  IconChevronRight,
+  IconPlus,
+  IconUsers,
+} from "@tabler/icons-react"
 
+import { LiveSearch } from "@/components/live-search"
 import { Button } from "@/components/ui/button"
 import {
   Empty,
@@ -10,7 +15,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { Input } from "@/components/ui/input"
+import { SearchHighlight } from "@/components/search-highlight"
 import { formatDate } from "@/lib/format"
 import { prisma } from "@/lib/prisma"
 
@@ -44,25 +49,21 @@ export default async function CustomersPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <form action="/office/customers" className="relative w-full sm:max-w-sm">
-        <IconSearch className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          name="q"
-          defaultValue={query}
-          placeholder="Name, SP- code or phone"
-          aria-label="Search customers"
-          className="pr-20 pl-9"
+      <div className="flex items-center gap-2">
+        <LiveSearch
+          placeholder="Name, SPC- code or phone"
+          label="Search customers"
+          className="sm:max-w-sm"
         />
         <Button
-          type="submit"
-          size="sm"
-          variant="ghost"
-          className="absolute top-1/2 right-1 -translate-y-1/2"
+          className="ml-auto shrink-0"
+          nativeButton={false}
+          render={<Link href="/office/customers/new" />}
         >
-          Search
+          <IconPlus />
+          New customer
         </Button>
-      </form>
+      </div>
 
       {customers.length > 0 ? (
         <ul className="divide-y overflow-hidden rounded-2xl border">
@@ -75,10 +76,10 @@ export default async function CustomersPage({
                 <CustomerAvatar name={customer.name} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
-                    {customer.name}
+                    <SearchHighlight text={customer.name} query={query} />
                   </p>
                   <p className="font-mono text-xs text-muted-foreground">
-                    {customer.code}
+                    <SearchHighlight text={customer.code} query={query} />
                   </p>
                 </div>
                 <div className="shrink-0 text-right text-xs">
@@ -86,7 +87,7 @@ export default async function CustomersPage({
                     {customer.city}
                   </p>
                   <p className="font-mono text-muted-foreground">
-                    {customer.phone}
+                    <SearchHighlight text={customer.phone} query={query} />
                   </p>
                 </div>
                 <p className="hidden shrink-0 font-mono text-xs text-muted-foreground sm:block">

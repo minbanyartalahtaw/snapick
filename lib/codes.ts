@@ -1,6 +1,5 @@
 import { randomInt } from "node:crypto"
 
-const CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
 const LETTERS = "ABCDEFGHJKMNPQRSTUVWXYZ"
 
 function randomString(alphabet: string, length: number) {
@@ -9,10 +8,6 @@ function randomString(alphabet: string, length: number) {
     result += alphabet[randomInt(alphabet.length)]
   }
   return result
-}
-
-export function generateCustomerCode() {
-  return `SP-${randomString(CODE_ALPHABET, 6)}`
 }
 
 export function generateOrderCode(date = new Date()) {

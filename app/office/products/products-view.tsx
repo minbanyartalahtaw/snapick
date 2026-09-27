@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Product } from "@/lib/generated/prisma/client"
+import { SearchHighlight } from "@/components/search-highlight"
 import { formatKyats } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -71,9 +72,11 @@ function StockText({ stock }: { stock: number }) {
 
 function ProductList({
   products,
+  query,
   onSelect,
 }: {
   products: Product[]
+  query: string
   onSelect: (product: Product) => void
 }) {
   return (
@@ -94,10 +97,10 @@ function ProductList({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-2">
                       <span className="truncate text-sm font-medium">
-                        {product.name}
+                        <SearchHighlight text={product.name} query={query} />
                       </span>
                       <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                        {product.sku}
+                        <SearchHighlight text={product.sku} query={query} />
                       </span>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
@@ -123,9 +126,11 @@ function ProductList({
 
 function ProductTable({
   products,
+  query,
   onSelect,
 }: {
   products: Product[]
+  query: string
   onSelect: (product: Product) => void
 }) {
   return (
@@ -154,9 +159,11 @@ function ProductTable({
               }}
               className="cursor-pointer outline-none focus-visible:bg-muted/50"
             >
-              <TableCell className="pl-4 font-medium">{product.name}</TableCell>
+              <TableCell className="pl-4 font-medium">
+                <SearchHighlight text={product.name} query={query} />
+              </TableCell>
               <TableCell className="font-mono text-xs text-muted-foreground">
-                {product.sku}
+                <SearchHighlight text={product.sku} query={query} />
               </TableCell>
               <TableCell
                 className={cn(
@@ -195,6 +202,7 @@ export function ProductsView({
   const [open, setOpen] = useState(false)
   const [formKey, setFormKey] = useState(0)
 
+  const query = searchParams.get("q")?.trim() ?? ""
   const selected = products.find((product) => product.id === selectedId) ?? null
 
   function changeView(next: ProductsViewMode) {
@@ -202,8 +210,8 @@ export function ProductsView({
     const params = new URLSearchParams(searchParams)
     if (next === "table") params.set("view", "table")
     else params.delete("view")
-    const query = params.toString()
-    router.replace(query ? `${pathname}?${query}` : pathname, {
+    const nextQuery = params.toString()
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
       scroll: false,
     })
   }
@@ -241,9 +249,9 @@ export function ProductsView({
 
       {products.length > 0 &&
         (view === "table" ? (
-          <ProductTable products={products} onSelect={select} />
+          <ProductTable products={products} query={query} onSelect={select} />
         ) : (
-          <ProductList products={products} onSelect={select} />
+          <ProductList products={products} query={query} onSelect={select} />
         ))}
 
       <ProductSheet

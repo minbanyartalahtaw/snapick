@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { notFound } from "next/navigation"
+import { IconPencil } from "@tabler/icons-react"
 
 import { BackButton } from "@/components/back-button"
 import { Badge } from "@/components/ui/badge"
@@ -48,68 +50,112 @@ export default async function CustomerPage({ params }: Props) {
     .filter((order) => order.status !== "cancelled")
     .reduce((sum, order) => sum + order.total, 0)
 
-  const details = [
-    { label: "Phone", value: customer.phone, mono: true },
+  const lastOrder = customer.orders[0]
+  const formatDay = (date: Date) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Yangon",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date)
+
+  const details: { label: string; value: string | null; mono?: boolean; fallback?: boolean }[] = [
+    { label: "Name", value: customer.name },
+    { label: "Mobile", value: customer.phone, mono: true },
     { label: "City", value: customer.city },
     { label: "Address", value: customer.address },
-    { label: "Note", value: customer.note },
-    { label: "Joined", value: formatDate(customer.createdAt), mono: true },
-  ].filter((detail) => detail.value)
+    { label: "Note", value: customer.note, fallback: true },
+    { label: "Added", value: formatDay(customer.createdAt), mono: true },
+  ]
+
+  const stats = [
+    { label: "Orders", value: String(customer.orders.length) },
+    { label: "Spent", value: formatKyats(totalSpent) },
+    { label: "Last order", value: lastOrder ? formatDay(lastOrder.placedAt) : "—" },
+  ]
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <div className="flex flex-col items-start gap-3">
-        <BackButton fallback="/office/customers" />
-        <div className="flex items-center gap-4">
-          <CustomerAvatar name={customer.name} className="size-14" />
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+      <BackButton fallback="/office/customers" />
+
+      <div className="overflow-hidden rounded-2xl border bg-card">
+        <div className="flex items-center gap-4 p-5">
+          <span className="relative shrink-0">
+            <CustomerAvatar name={customer.name} className="size-14 text-base" />
+            <span className="absolute -right-0.5 -bottom-0.5 flex size-6 items-center justify-center rounded-full border border-border bg-muted">
+              <IconPencil className="size-3 text-muted-foreground" />
+            </span>
+          </span>
           <div className="min-w-0">
-            <h1 className="truncate font-heading text-2xl font-semibold tracking-tight">
+            <h1 className="truncate text-lg font-semibold tracking-tight">
               {customer.name}
             </h1>
-            <p className="font-mono text-sm text-muted-foreground">
+            <p className="mt-1 inline-flex rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs text-muted-foreground">
               {customer.code}
             </p>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border p-4">
-          <p className="text-xs text-muted-foreground">Orders</p>
-          <p className="text-xl font-semibold tabular-nums">
-            {customer.orders.length}
-          </p>
-        </div>
-        <div className="rounded-2xl border p-4">
-          <p className="text-xs text-muted-foreground">Total spent</p>
-          <p className="text-xl font-semibold tabular-nums">
-            {formatKyats(totalSpent)}
-          </p>
+        <div className="grid grid-cols-3 divide-x border-t">
+          {stats.map((stat) => (
+            <div key={stat.label} className="px-2 py-4 text-center">
+              <p className="text-[11px] font-medium tracking-widest text-muted-foreground uppercase">
+                {stat.label}
+              </p>
+              <p className="mt-1.5 text-sm font-semibold tabular-nums">
+                {stat.value}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
-      <dl className="divide-y rounded-2xl border">
-        {details.map((detail) => (
-          <div key={detail.label} className="flex gap-4 px-4 py-3 text-sm">
-            <dt className="w-20 shrink-0 text-muted-foreground">
-              {detail.label}
-            </dt>
-            <dd className={detail.mono ? "font-mono" : undefined}>
-              {detail.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      <div>
+        <div className="mb-2 flex items-center justify-between px-1">
+          <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+            Details
+          </p>
+          <Link
+            href={`/office/customers/${customer.code}/edit`}
+            className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/50"
+          >
+            <IconPencil className="size-3.5" />
+            Edit
+          </Link>
+        </div>
+        <dl className="divide-y overflow-hidden rounded-2xl border bg-card">
+          {details.map((detail) => (
+            <div
+              key={detail.label}
+              className="flex items-start justify-between gap-6 px-4 py-3.5 text-sm"
+            >
+              <dt className="shrink-0 pt-0.5 text-[11px] font-medium tracking-widest text-muted-foreground uppercase">
+                {detail.label}
+              </dt>
+              <dd
+                className={
+                  detail.mono
+                    ? "text-right font-mono break-words"
+                    : "text-right break-words"
+                }
+              >
+                {detail.value || (detail.fallback ? "—" : null)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
 
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium">Orders</h2>
         {customer.orders.length > 0 ? (
           <ul className="divide-y rounded-2xl border">
             {customer.orders.map((order) => (
-              <li
-                key={order.id}
-                className="flex items-center gap-3 px-4 py-3 text-sm"
-              >
+              <li key={order.id}>
+                <Link
+                  href={`/office/orders/${order.code}`}
+                  className="flex items-center gap-3 px-4 py-3 text-sm transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50"
+                >
                 <div className="min-w-0 flex-1">
                   <p className="font-mono font-medium">{order.code}</p>
                   <p className="font-mono text-xs text-muted-foreground">
@@ -122,6 +168,7 @@ export default async function CustomerPage({ params }: Props) {
                   </span>
                   <StatusBadge status={order.status} />
                 </div>
+                </Link>
               </li>
             ))}
           </ul>

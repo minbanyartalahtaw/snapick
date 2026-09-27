@@ -23,7 +23,7 @@ enum PaymentMethod {
 
 model Customer {
   id      Int     @id @default(autoincrement())
-  code    String  @unique
+  code    String  @unique @default(dbgenerated("((('SPC-'::text || nextval('customer_code_seq'::regclass)) || substr('ABCDEFGHJKMNPQRSTUVWXYZ'::text, ((floor((random() * (23)::double precision)))::integer + 1), 1)) || substr('ABCDEFGHJKMNPQRSTUVWXYZ'::text, ((floor((random() * (23)::double precision)))::integer + 1), 1))"))
   name    String
   phone   String  @unique
   city    String
