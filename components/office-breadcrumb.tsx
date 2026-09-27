@@ -1,20 +1,20 @@
 "use client"
 
 import { Fragment } from "react"
-import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
 function toTitle(segment: string) {
-  return decodeURIComponent(segment)
+  const text = decodeURIComponent(segment)
+  if (text !== text.toLowerCase()) return text
+  return text
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ")
@@ -38,9 +38,9 @@ export function OfficeBreadcrumb() {
                 {isLast ? (
                   <BreadcrumbPage>{toTitle(segment)}</BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink render={<Link href={href} />}>
+                  <span className="text-muted-foreground">
                     {toTitle(segment)}
-                  </BreadcrumbLink>
+                  </span>
                 )}
               </BreadcrumbItem>
             </Fragment>

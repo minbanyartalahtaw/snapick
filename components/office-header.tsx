@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 
+import { RouteMemory } from "@/components/back-button"
 import { OfficeBreadcrumb } from "@/components/office-breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -33,6 +34,9 @@ export function OfficeHeader() {
         hidden && "-translate-y-full"
       )}
     >
+      <Suspense fallback={null}>
+        <RouteMemory />
+      </Suspense>
       <SidebarTrigger className="-ml-1" />
       <Separator
         orientation="vertical"
