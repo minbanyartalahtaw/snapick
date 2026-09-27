@@ -2,7 +2,7 @@
 
 import { useActionState, useCallback, useEffect } from "react"
 
-import { updateProduct } from "@/app/actions/products"
+import { updateProduct } from "./actions"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,

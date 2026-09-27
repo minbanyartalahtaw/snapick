@@ -3,7 +3,7 @@
 import { useActionState } from "react"
 import Link from "next/link"
 
-import { createProduct } from "@/app/actions/products"
+import { createProduct } from "../actions"
 import { Button } from "@/components/ui/button"
 
 import { ProductFields } from "../product-fields"

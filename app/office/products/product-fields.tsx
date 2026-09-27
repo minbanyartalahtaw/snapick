@@ -1,4 +1,4 @@
-import type { ProductFormState } from "@/app/actions/products"
+import type { ProductFormState } from "./actions"
 import {
   Field,
   FieldContent,
