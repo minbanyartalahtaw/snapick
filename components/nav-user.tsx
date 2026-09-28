@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { GlassAvatar } from "@/components/glass-avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -38,21 +38,32 @@ import {
 } from "@/components/ui/sidebar"
 import { Switch } from "@/components/ui/switch"
 
-function UserInfo({ username }: { username: string }) {
+export type SidebarAdmin = {
+  name: string
+  username: string
+  avatar: string
+  avatarColor: string
+}
+
+function UserInfo({ admin }: { admin: SidebarAdmin }) {
   return (
     <>
-      <Avatar>
-        <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
-      </Avatar>
+      <GlassAvatar
+        seed={admin.avatar}
+        color={admin.avatarColor}
+        className="size-8"
+      />
       <div className="grid flex-1 text-left text-sm leading-tight">
-        <span className="truncate font-medium">{username}</span>
-        <span className="truncate text-xs text-muted-foreground">Admin</span>
+        <span className="truncate font-medium">{admin.name}</span>
+        <span className="truncate text-xs text-muted-foreground">
+          @{admin.username}
+        </span>
       </div>
     </>
   )
 }
 
-export function NavUser({ username }: { username: string }) {
+export function NavUser({ admin }: { admin: SidebarAdmin }) {
   const { resolvedTheme, setTheme } = useTheme()
   const [logoutOpen, setLogoutOpen] = useState(false)
   const isDark = resolvedTheme === "dark"
@@ -69,7 +80,7 @@ export function NavUser({ username }: { username: string }) {
               />
             }
           >
-            <UserInfo username={username} />
+            <UserInfo admin={admin} />
             <IconSelector className="ml-auto" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -80,7 +91,7 @@ export function NavUser({ username }: { username: string }) {
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="flex items-center gap-2 p-1.5 text-foreground">
-                <UserInfo username={username} />
+                <UserInfo admin={admin} />
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

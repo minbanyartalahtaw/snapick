@@ -6,6 +6,8 @@ import { redirect } from "next/navigation"
 import { Prisma } from "@/lib/generated/prisma/client"
 import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/session"
+import { DEFAULT_AVATAR_COLOR, isAvatarColor } from "@/lib/avatar"
+import { isTrustLevel, type TrustLevel } from "@/lib/trust"
 
 export type CustomerFormValues = {
   name: string
@@ -13,6 +15,9 @@ export type CustomerFormValues = {
   city: string
   address: string
   note: string
+  trust: TrustLevel
+  avatar: string
+  avatarColor: string
 }
 
 export type CustomerFormState =
@@ -23,12 +28,21 @@ export type CustomerFormState =
   | undefined
 
 function readCustomerValues(formData: FormData): CustomerFormValues {
+  const trust = String(formData.get("trust") ?? "")
+  const avatarColor = String(formData.get("avatarColor") ?? "")
   return {
     name: String(formData.get("name") ?? "").trim(),
     phone: String(formData.get("phone") ?? "").trim(),
     city: String(formData.get("city") ?? "").trim(),
     address: String(formData.get("address") ?? "").trim(),
     note: String(formData.get("note") ?? "").trim(),
+    trust: isTrustLevel(trust) ? trust : "new",
+    avatar: String(formData.get("avatar") ?? "")
+      .trim()
+      .slice(0, 64),
+    avatarColor: isAvatarColor(avatarColor)
+      ? avatarColor
+      : DEFAULT_AVATAR_COLOR,
   }
 }
 
@@ -54,6 +68,9 @@ export async function updateCustomer(
         city: values.city,
         address: values.address,
         note: values.note,
+        trust: values.trust,
+        avatar: values.avatar || null,
+        avatarColor: values.avatarColor,
       },
     })
   } catch (error) {
@@ -91,6 +108,9 @@ export async function createCustomer(
         city: values.city,
         address: values.address,
         note: values.note,
+        trust: values.trust,
+        avatar: values.avatar || null,
+        avatarColor: values.avatarColor,
       },
       select: { code: true },
     })

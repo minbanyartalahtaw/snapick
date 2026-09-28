@@ -10,7 +10,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { NavUser } from "@/components/nav-user"
+import { NavUser, type SidebarAdmin } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -32,9 +32,9 @@ const navItems = [
 ]
 
 export function AppSidebar({
-  username,
+  admin,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { username: string }) {
+}: React.ComponentProps<typeof Sidebar> & { admin: SidebarAdmin }) {
   const pathname = usePathname()
 
   return (
@@ -80,7 +80,7 @@ export function AppSidebar({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser username={username} />
+        <NavUser admin={admin} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

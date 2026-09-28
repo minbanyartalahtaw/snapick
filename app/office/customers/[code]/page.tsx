@@ -9,7 +9,7 @@ import type { DeliveryStatus } from "@/lib/generated/prisma/client"
 import { formatDate, formatKyats } from "@/lib/format"
 import { prisma } from "@/lib/prisma"
 
-import { CustomerAvatar } from "../customer-avatar"
+import { CustomerAvatar, TrustBadge } from "../customer-avatar"
 
 type Props = { params: Promise<{ code: string }> }
 
@@ -80,19 +80,17 @@ export default async function CustomerPage({ params }: Props) {
 
       <div className="overflow-hidden rounded-2xl border bg-card">
         <div className="flex items-center gap-4 p-5">
-          <span className="relative shrink-0">
-            <CustomerAvatar name={customer.name} className="size-14 text-base" />
-            <span className="absolute -right-0.5 -bottom-0.5 flex size-6 items-center justify-center rounded-full border border-border bg-muted">
-              <IconPencil className="size-3 text-muted-foreground" />
-            </span>
-          </span>
+          <CustomerAvatar customer={customer} className="size-14 text-base" />
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold tracking-tight">
               {customer.name}
             </h1>
-            <p className="mt-1 inline-flex rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs text-muted-foreground">
-              {customer.code}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <p className="inline-flex rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs text-muted-foreground">
+                {customer.code}
+              </p>
+              <TrustBadge trust={customer.trust} className="py-1" />
+            </div>
           </div>
         </div>
 

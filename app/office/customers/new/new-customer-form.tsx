@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { DEFAULT_AVATAR_COLOR } from "@/lib/avatar"
 import { cities } from "@/lib/cities"
 
 import {
@@ -22,6 +23,7 @@ import {
   type CustomerFormState,
   type CustomerFormValues,
 } from "../actions"
+import { TrustPicker } from "../trust-picker"
 
 const empty: CustomerFormValues = {
   name: "",
@@ -29,6 +31,9 @@ const empty: CustomerFormValues = {
   city: "",
   address: "",
   note: "",
+  trust: "new",
+  avatar: "",
+  avatarColor: DEFAULT_AVATAR_COLOR,
 }
 
 function CustomerFields({
@@ -81,9 +86,7 @@ function CustomerFields({
               <SelectValue>
                 {(value) =>
                   value || (
-                    <span className="text-muted-foreground">
-                      Select a city
-                    </span>
+                    <span className="text-muted-foreground">Select a city</span>
                   )
                 }
               </SelectValue>
@@ -112,7 +115,8 @@ function CustomerFields({
       </div>
       <div className="flex flex-col gap-2">
         <label htmlFor="customer-note" className="text-sm font-medium">
-          Note <span className="font-normal text-muted-foreground">optional</span>
+          Note{" "}
+          <span className="font-normal text-muted-foreground">optional</span>
         </label>
         <Textarea
           id="customer-note"
@@ -139,7 +143,7 @@ function CustomerFields({
   )
 }
 
-export function NewCustomerForm() {
+export function NewCustomerForm({ initialSeed }: { initialSeed: string }) {
   const [state, formAction, pending] = useActionState(
     createCustomer,
     undefined as CustomerFormState
@@ -149,6 +153,13 @@ export function NewCustomerForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       {state?.error && <FieldError>{state.error}</FieldError>}
+      <TrustPicker
+        key={`trust-${JSON.stringify(values)}`}
+        name={values.name}
+        initialTrust={values.trust}
+        initialSeed={values.avatar || initialSeed}
+        initialColor={values.avatarColor}
+      />
       <CustomerFields
         key={JSON.stringify(values)}
         initial={values}

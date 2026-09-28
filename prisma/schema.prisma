@@ -21,6 +21,27 @@ enum PaymentMethod {
   refunded
 }
 
+enum TrustLevel {
+  new
+  trusted
+  vip
+  careful
+}
+
+model Admin {
+  id           Int    @id @default(autoincrement())
+  name         String
+  username     String @unique
+  passwordHash String @map("password_hash")
+  avatar       String
+  avatarColor  String @default("eb4747") @map("avatar_color")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("admin")
+}
+
 model Customer {
   id      Int     @id @default(autoincrement())
   code    String  @unique @default(dbgenerated("((('SPC-'::text || nextval('customer_code_seq'::regclass)) || substr('ABCDEFGHJKMNPQRSTUVWXYZ'::text, ((floor((random() * (23)::double precision)))::integer + 1), 1)) || substr('ABCDEFGHJKMNPQRSTUVWXYZ'::text, ((floor((random() * (23)::double precision)))::integer + 1), 1))"))
@@ -30,6 +51,8 @@ model Customer {
   address String
   note    String  @default("")
   avatar  String?
+  avatarColor String @default("eb4747") @map("avatar_color")
+  trust   TrustLevel @default(new)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)

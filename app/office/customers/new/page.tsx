@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { BackButton } from "@/components/back-button"
+import { randomAvatarSeed } from "@/lib/avatar"
 
 import { NewCustomerForm } from "./new-customer-form"
 
@@ -15,7 +16,7 @@ export default function NewCustomerPage() {
         <BackButton fallback="/office/customers" />
         <h1 className="text-lg font-semibold tracking-tight">New customer</h1>
       </div>
-      <NewCustomerForm />
+      <NewCustomerForm initialSeed={randomAvatarSeed()} />
     </div>
   )
 }

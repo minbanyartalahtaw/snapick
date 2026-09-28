@@ -16,10 +16,10 @@ function getKey() {
   return new TextEncoder().encode(secret)
 }
 
-export async function encrypt(username: string) {
+export async function encrypt(adminId: number) {
   return new SignJWT()
     .setProtectedHeader({ alg: "HS256" })
-    .setSubject(username)
+    .setSubject(String(adminId))
     .setIssuedAt()
     .setExpirationTime(`${SESSION_MAX_AGE}s`)
     .sign(getKey())
@@ -34,14 +34,15 @@ export async function decrypt(token: string | undefined) {
     const { payload } = await jwtVerify(token, getKey(), {
       algorithms: ["HS256"],
     })
-    return payload.sub ? { username: payload.sub } : null
+    const adminId = Number(payload.sub)
+    return Number.isInteger(adminId) && adminId > 0 ? { adminId } : null
   } catch {
     return null
   }
 }
 
-export async function createSession(username: string) {
-  const token = await encrypt(username)
+export async function createSession(adminId: number) {
+  const token = await encrypt(adminId)
   const cookieStore = await cookies()
 
   cookieStore.set(SESSION_COOKIE, token, {

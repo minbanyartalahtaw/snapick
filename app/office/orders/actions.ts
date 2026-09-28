@@ -10,6 +10,7 @@ import {
   Prisma,
 } from "@/lib/generated/prisma/client"
 import { prisma } from "@/lib/prisma"
+import { requireAdmin } from "@/lib/auth"
 import { getSession } from "@/lib/session"
 
 export type OrderLineValues = { productId: string; quantity: string }
@@ -69,8 +70,7 @@ function isUniqueError(error: unknown) {
 const statuses = new Set<string>(Object.values(DeliveryStatus))
 
 export async function updateOrderStatus(orderId: number, status: string) {
-  const session = await getSession()
-  if (!session) redirect("/login")
+  const admin = await requireAdmin()
   if (!Number.isInteger(orderId) || !statuses.has(status)) return
 
   const next = status as DeliveryStatus
@@ -83,7 +83,7 @@ export async function updateOrderStatus(orderId: number, status: string) {
   await prisma.$transaction([
     prisma.order.update({ where: { id: orderId }, data: { status: next } }),
     prisma.orderStatusEvent.create({
-      data: { orderId, status: next, changedBy: session.username },
+      data: { orderId, status: next, changedBy: admin.username },
     }),
   ])
   revalidatePath("/office/orders")
@@ -202,8 +202,7 @@ export async function createOrder(
   _state: OrderFormState,
   formData: FormData
 ): Promise<OrderFormState> {
-  const session = await getSession()
-  if (!session) redirect("/login")
+  const admin = await requireAdmin()
 
   const values = readOrderValues(formData)
   if (!values.name || !values.phone || !values.city) {
@@ -280,7 +279,7 @@ export async function createOrder(
             note: values.note,
             items: { create: items },
             statusEvents: {
-              create: { status: DeliveryStatus.pending, changedBy: session.username },
+              create: { status: DeliveryStatus.pending, changedBy: admin.username },
             },
           },
         })

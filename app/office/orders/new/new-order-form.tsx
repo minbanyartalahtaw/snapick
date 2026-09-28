@@ -41,6 +41,8 @@ export type OrderCustomerOption = {
   phone: string
   city: string
   address: string
+  avatar: string | null
+  avatarColor: string
 }
 
 export type OrderProductOption = {
@@ -235,7 +237,7 @@ function OrderFields({
                         value={code}
                         className="h-auto items-center gap-3 py-2 pr-3 pl-2.5 font-normal [&>span.pointer-events-none]:hidden"
                       >
-                        <CustomerAvatar name={customer.name} className="size-9 text-xs" />
+                        <CustomerAvatar customer={customer} className="size-9 text-xs" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-medium">
                             <SearchHighlight text={customer.name} query={query} />

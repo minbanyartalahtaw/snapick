@@ -1,4 +1,5 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { GlassAvatar } from "@/components/glass-avatar"
+import { getTrustLevel } from "@/lib/trust"
 import { cn } from "@/lib/utils"
 
 const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" })
@@ -15,18 +16,47 @@ function initials(name: string) {
   return firstGrapheme(words[0] ?? "").toUpperCase()
 }
 
+export type AvatarCustomer = {
+  name: string
+  code: string
+  avatar: string | null
+  avatarColor: string
+}
+
 export function CustomerAvatar({
-  name,
+  customer,
   className,
 }: {
-  name: string
+  customer: AvatarCustomer
   className?: string
 }) {
   return (
-    <Avatar className={cn("size-10", className)}>
-      <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
-        {initials(name)}
-      </AvatarFallback>
-    </Avatar>
+    <GlassAvatar
+      seed={customer.avatar ?? customer.code}
+      color={customer.avatarColor}
+      label={initials(customer.name)}
+      className={cn("text-xs", className)}
+    />
+  )
+}
+
+export function TrustBadge({
+  trust,
+  className,
+}: {
+  trust: string
+  className?: string
+}) {
+  const level = getTrustLevel(trust)
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
+        level.badgeClassName,
+        className
+      )}
+    >
+      {level.label}
+    </span>
   )
 }

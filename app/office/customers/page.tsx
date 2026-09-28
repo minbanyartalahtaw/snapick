@@ -19,7 +19,7 @@ import { SearchHighlight } from "@/components/search-highlight"
 import { formatDate } from "@/lib/format"
 import { prisma } from "@/lib/prisma"
 
-import { CustomerAvatar } from "./customer-avatar"
+import { CustomerAvatar, TrustBadge } from "./customer-avatar"
 
 export const metadata: Metadata = {
   title: "Customers | Snapick",
@@ -73,10 +73,15 @@ export default async function CustomersPage({
                 href={`/office/customers/${customer.code}`}
                 className="flex items-center gap-3 px-4 py-3 transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50"
               >
-                <CustomerAvatar name={customer.name} />
+                <CustomerAvatar customer={customer} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    <SearchHighlight text={customer.name} query={query} />
+                  <p className="flex items-center gap-2 text-sm font-medium">
+                    <span className="truncate">
+                      <SearchHighlight text={customer.name} query={query} />
+                    </span>
+                    {customer.trust !== "new" && (
+                      <TrustBadge trust={customer.trust} className="shrink-0" />
+                    )}
                   </p>
                   <p className="font-mono text-xs text-muted-foreground">
                     <SearchHighlight text={customer.code} query={query} />

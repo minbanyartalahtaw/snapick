@@ -34,6 +34,7 @@ export function LoginForm() {
             <Field>
               <FieldLabel htmlFor="username">Username</FieldLabel>
               <Input
+                key={state?.username ?? ""}
                 id="username"
                 name="username"
                 autoComplete="username"

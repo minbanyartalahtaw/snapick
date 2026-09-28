@@ -22,6 +22,7 @@ import {
   type CustomerFormState,
   type CustomerFormValues,
 } from "../../actions"
+import { TrustPicker } from "../../trust-picker"
 
 function CustomerFields({
   code,
@@ -75,9 +76,7 @@ function CustomerFields({
               <SelectValue>
                 {(value) =>
                   value || (
-                    <span className="text-muted-foreground">
-                      Select a city
-                    </span>
+                    <span className="text-muted-foreground">Select a city</span>
                   )
                 }
               </SelectValue>
@@ -105,7 +104,8 @@ function CustomerFields({
       </div>
       <div className="flex flex-col gap-2">
         <label htmlFor="customer-note" className="text-sm font-medium">
-          Note <span className="font-normal text-muted-foreground">optional</span>
+          Note{" "}
+          <span className="font-normal text-muted-foreground">optional</span>
         </label>
         <Textarea
           id="customer-note"
@@ -147,6 +147,13 @@ export function EditCustomerForm({
   return (
     <form action={formAction} className="flex flex-col gap-4">
       {state?.error && <FieldError>{state.error}</FieldError>}
+      <TrustPicker
+        key={`trust-${JSON.stringify(values)}`}
+        name={values.name}
+        initialTrust={values.trust}
+        initialSeed={values.avatar || code}
+        initialColor={values.avatarColor}
+      />
       <CustomerFields
         key={JSON.stringify(values)}
         code={code}

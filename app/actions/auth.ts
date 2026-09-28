@@ -1,17 +1,17 @@
 "use server"
 
-import { createHash, timingSafeEqual } from "node:crypto"
 import { redirect } from "next/navigation"
 
+import { verifyPassword } from "@/lib/password"
+import { prisma } from "@/lib/prisma"
 import { createSession, deleteSession } from "@/lib/session"
 
 export type LoginState = { error?: string; username?: string } | undefined
 
-function safeEqual(a: string, b: string) {
-  const hashA = createHash("sha256").update(a).digest()
-  const hashB = createHash("sha256").update(b).digest()
-  return timingSafeEqual(hashA, hashB)
-}
+// Checked against when the username is unknown, so a miss costs the same
+// time as a wrong password.
+const DUMMY_HASH =
+  "scrypt$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
 
 export async function login(
   _state: LoginState,
@@ -19,21 +19,21 @@ export async function login(
 ): Promise<LoginState> {
   const username = String(formData.get("username") ?? "").trim()
   const password = String(formData.get("password") ?? "")
-  const adminUsername = process.env.ADMIN_USERNAME
-  const adminPassword = process.env.ADMIN_PASSWORD
 
-  if (!adminUsername || !adminPassword) {
-    return { error: "Login is not configured.", username }
-  }
+  const admin = await prisma.admin.findUnique({
+    where: { username },
+    select: { id: true, passwordHash: true },
+  })
+  const valid = await verifyPassword(
+    password,
+    admin?.passwordHash ?? DUMMY_HASH
+  )
 
-  const validUsername = safeEqual(username, adminUsername)
-  const validPassword = safeEqual(password, adminPassword)
-
-  if (!validUsername || !validPassword) {
+  if (!admin || !valid) {
     return { error: "Invalid username or password.", username }
   }
 
-  await createSession(adminUsername)
+  await createSession(admin.id)
   redirect("/office/dashboard")
 }
 

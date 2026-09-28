@@ -23,7 +23,15 @@ export default async function EditOrderPage({ params }: Props) {
     }),
     prisma.customer.findMany({
       orderBy: { name: "asc" },
-      select: { code: true, name: true, phone: true, city: true, address: true },
+      select: {
+        code: true,
+        name: true,
+        phone: true,
+        city: true,
+        address: true,
+        avatar: true,
+        avatarColor: true,
+      },
     }),
     prisma.product.findMany({
       orderBy: { name: "asc" },
