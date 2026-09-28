@@ -3,10 +3,10 @@
 import {
   IconLayoutDashboard,
   IconPackage,
-  IconShoppingBag,
   IconShoppingCart,
   IconUsers,
 } from "@tabler/icons-react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -46,9 +46,13 @@ export function AppSidebar({
               size="lg"
               render={<Link href="/office/dashboard" />}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <IconShoppingBag className="size-4" />
-              </div>
+              <Image
+                src="/icons/icon-192.png"
+                alt=""
+                width={32}
+                height={32}
+                className="size-8 shrink-0"
+              />
               <span className="truncate text-base font-semibold">Snapick</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
