@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
+import { flash } from "@/lib/flash"
 import { generateOrderCode } from "@/lib/codes"
 import {
   DeliveryStatus,
@@ -182,6 +183,7 @@ export async function updateOrder(
   if (customerCode && customerCode !== order.customerCode) {
     revalidatePath(`/office/customers/${customerCode}`)
   }
+  await flash("Order updated")
   redirect(`/office/orders/${order.code}`)
 }
 
@@ -286,6 +288,7 @@ export async function createOrder(
       })
       revalidatePath("/office/orders")
       revalidatePath("/office/products")
+      await flash("Order created")
       redirect(`/office/orders/${code}`)
     } catch (error) {
       if (error instanceof StockError) {

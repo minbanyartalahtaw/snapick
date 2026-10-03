@@ -21,6 +21,23 @@ export const avatarColors = [
   { value: "27272a", label: "Black" },
 ]
 
+// The handful of colours offered in the customer avatar picker.
+export const pickerAvatarColors = avatarColors.filter((color) =>
+  ["eb4747", "eb7e47", "47eb7e", "477eeb", "9947eb"].includes(color.value)
+)
+
+// Fixed looks per colour, so picking a style never needs a shuffle.
+export const avatarStyleSeeds = [
+  "style-a",
+  "style-b",
+  "style-c",
+  "style-d",
+  "style-e",
+  "style-f",
+  "style-g",
+  "style-h",
+]
+
 export function isAvatarColor(value: string) {
   return avatarColors.some((color) => color.value === value)
 }

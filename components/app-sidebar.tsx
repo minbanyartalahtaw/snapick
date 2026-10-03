@@ -11,6 +11,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { NavUser, type SidebarAdmin } from "@/components/nav-user"
+import { SnapickWordmark } from "@/components/snapick-wordmark"
 import {
   Sidebar,
   SidebarContent,
@@ -53,7 +54,7 @@ export function AppSidebar({
                 height={32}
                 className="size-8 shrink-0"
               />
-              <span className="truncate text-base font-semibold">Snapick</span>
+              <SnapickWordmark className="h-6! w-auto! shrink-0 text-sidebar-foreground" />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

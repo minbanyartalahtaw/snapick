@@ -1,6 +1,7 @@
 import { cookies } from "next/headers"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { FlashToast } from "@/components/flash-toast"
 import { OfficeHeader } from "@/components/office-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -18,6 +19,7 @@ export default async function OfficeLayout({
 
   return (
     <TooltipProvider>
+      <FlashToast />
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar admin={admin} />
         <SidebarInset>

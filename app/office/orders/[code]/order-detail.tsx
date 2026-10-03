@@ -6,6 +6,7 @@ import Link from "next/link"
 import { IconDownload, IconPencil } from "@tabler/icons-react"
 
 import { BackButton } from "@/components/back-button"
+import { toast } from "@/components/ui/toast"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Textarea } from "@/components/ui/textarea"
@@ -92,8 +93,10 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
       link.href = url
       link.download = `${order.code}.png`
       link.click()
+      toast.add({ type: "success", title: "Image saved" })
     } catch {
       setImageError("Could not save the image.")
+      toast.add({ type: "error", title: "Could not save the image" })
     } finally {
       clone?.remove()
       setSavingImage(false)

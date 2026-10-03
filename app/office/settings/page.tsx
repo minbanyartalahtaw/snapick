@@ -12,12 +12,14 @@ export default async function SettingsPage() {
   const admin = await requireAdmin()
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
-      <h1 className="text-lg font-semibold tracking-tight">Settings</h1>
-      <section>
-        <p className="mb-2 px-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
-          Profile
-        </p>
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-sm font-medium">Profile</h2>
+          <p className="text-sm text-muted-foreground">
+            Your name, username and avatar.
+          </p>
+        </div>
         <ProfileForm
           initial={{
             name: admin.name,
@@ -27,10 +29,13 @@ export default async function SettingsPage() {
           }}
         />
       </section>
-      <section>
-        <p className="mb-2 px-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
-          Password
-        </p>
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-sm font-medium">Password</h2>
+          <p className="text-sm text-muted-foreground">
+            Use at least 8 characters.
+          </p>
+        </div>
         <PasswordForm />
       </section>
     </div>

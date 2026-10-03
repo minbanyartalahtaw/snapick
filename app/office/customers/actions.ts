@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import { Prisma } from "@/lib/generated/prisma/client"
 import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/session"
+import { flash } from "@/lib/flash"
 import { DEFAULT_AVATAR_COLOR, isAvatarColor } from "@/lib/avatar"
 import { isTrustLevel, type TrustLevel } from "@/lib/trust"
 
@@ -85,6 +86,7 @@ export async function updateCustomer(
 
   revalidatePath("/office/customers")
   revalidatePath(`/office/customers/${code}`)
+  await flash("Customer updated")
   redirect(`/office/customers/${code}`)
 }
 
@@ -115,6 +117,7 @@ export async function createCustomer(
       select: { code: true },
     })
     revalidatePath("/office/customers")
+    await flash("Customer created")
     redirect(`/office/customers/${customer.code}`)
   } catch (error) {
     if (

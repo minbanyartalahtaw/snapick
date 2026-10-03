@@ -1,10 +1,11 @@
 "use client"
 
-import { useActionState, useState } from "react"
+import { useActionState, useEffect, useState } from "react"
 import { IconArrowsShuffle } from "@tabler/icons-react"
 
 import { AvatarColorSelect } from "@/components/avatar-color-select"
 import { GlassAvatar } from "@/components/glass-avatar"
+import { toast } from "@/components/ui/toast"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -22,10 +23,12 @@ function ProfileFields({
   initial,
   pending,
   saved,
+  error,
 }: {
   initial: ProfileFormValues
   pending: boolean
   saved: boolean
+  error?: string
 }) {
   const [avatar, setAvatar] = useState(initial.avatar)
   const [avatarColor, setAvatarColor] = useState(initial.avatarColor)
@@ -34,8 +37,9 @@ function ProfileFields({
     <div className="flex flex-col gap-4 rounded-2xl border bg-card p-4">
       <input type="hidden" name="avatar" value={avatar} />
       <input type="hidden" name="avatarColor" value={avatarColor} />
-      <div className="flex flex-wrap items-center gap-4">
-        <GlassAvatar seed={avatar} color={avatarColor} className="size-16" />
+      {error && <FieldError>{error}</FieldError>}
+      <div className="flex items-center gap-4">
+        <GlassAvatar seed={avatar} color={avatarColor} className="size-14" />
         <div className="flex flex-wrap items-center gap-2">
           <AvatarColorSelect
             id="admin-avatar-color"
@@ -45,6 +49,7 @@ function ProfileFields({
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => setAvatar(randomAvatarSeed())}
           >
             <IconArrowsShuffle data-icon="inline-start" />
@@ -97,14 +102,18 @@ export function ProfileForm({ initial }: { initial: ProfileFormValues }) {
   )
   const values = state?.values ?? initial
 
+  useEffect(() => {
+    if (state?.saved) toast.add({ type: "success", title: "Profile saved" })
+  }, [state])
+
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      {state?.error && <FieldError>{state.error}</FieldError>}
+    <form action={formAction}>
       <ProfileFields
         key={JSON.stringify(values)}
         initial={values}
         pending={pending}
         saved={!!state?.saved}
+        error={state?.error}
       />
     </form>
   )
@@ -115,6 +124,10 @@ export function PasswordForm() {
     changePassword,
     undefined as PasswordFormState
   )
+
+  useEffect(() => {
+    if (state?.saved) toast.add({ type: "success", title: "Password changed" })
+  }, [state])
 
   return (
     <form
@@ -134,7 +147,7 @@ export function PasswordForm() {
           required
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <label htmlFor="new-password" className="text-sm font-medium">
             New password

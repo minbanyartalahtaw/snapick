@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useActionState } from "react"
 import { IconPlus, IconTrash } from "@tabler/icons-react"
 
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { toast } from "@/components/ui/toast"
 import { CustomerAvatar } from "@/app/office/customers/customer-avatar"
 import { SearchHighlight } from "@/components/search-highlight"
 import { cities } from "@/lib/cities"
@@ -503,9 +504,12 @@ export function NewOrderForm({
     initial ? { values: initial } : undefined
   )
 
+  useEffect(() => {
+    if (state?.error) toast.add({ type: "error", title: state.error })
+  }, [state])
+
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      {state?.error && <FieldError>{state.error}</FieldError>}
       <OrderFields
         key={JSON.stringify(state?.values ?? null)}
         customers={customers}

@@ -18,6 +18,8 @@ import {
 import { SearchHighlight } from "@/components/search-highlight"
 import { formatDate } from "@/lib/format"
 import { prisma } from "@/lib/prisma"
+import { isTrustLevel, trustLevels } from "@/lib/trust"
+import { cn } from "@/lib/utils"
 
 import { CustomerAvatar, TrustBadge } from "./customer-avatar"
 
@@ -25,27 +27,58 @@ export const metadata: Metadata = {
   title: "Customers | Snapick",
 }
 
+const trustDots: Record<string, string> = {
+  new: "bg-muted-foreground",
+  trusted: "bg-emerald-500",
+  vip: "bg-amber-500",
+  careful: "bg-rose-500",
+}
+
+function customersHref(q: string, trust?: string) {
+  const params = new URLSearchParams()
+  if (q) params.set("q", q)
+  if (trust) params.set("trust", trust)
+  const search = params.toString()
+  return search ? `/office/customers?${search}` : "/office/customers"
+}
+
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; trust?: string }>
 }) {
-  const { q } = await searchParams
-  const query = q?.trim() ?? ""
+  const params = await searchParams
+  const query = params.q?.trim() ?? ""
   const phoneQuery = query.replace(/[\s-]/g, "")
+  const trust =
+    params.trust && isTrustLevel(params.trust) ? params.trust : undefined
 
-  const customers = await prisma.customer.findMany({
-    where: query
-      ? {
-          OR: [
-            { name: { contains: query, mode: "insensitive" } },
-            { code: { contains: query, mode: "insensitive" } },
-            ...(phoneQuery ? [{ phone: { contains: phoneQuery } }] : []),
-          ],
-        }
-      : undefined,
-    orderBy: { createdAt: "desc" },
-  })
+  const searchWhere = query
+    ? {
+        OR: [
+          { name: { contains: query, mode: "insensitive" as const } },
+          { code: { contains: query, mode: "insensitive" as const } },
+          ...(phoneQuery ? [{ phone: { contains: phoneQuery } }] : []),
+        ],
+      }
+    : undefined
+
+  const [grouped, customers] = await Promise.all([
+    prisma.customer.groupBy({
+      by: ["trust"],
+      where: searchWhere,
+      _count: { _all: true },
+    }),
+    prisma.customer.findMany({
+      where: { ...searchWhere, ...(trust ? { trust } : {}) },
+      orderBy: { createdAt: "desc" },
+    }),
+  ])
+
+  const counts = Object.fromEntries(
+    grouped.map((group) => [group.trust, group._count._all])
+  ) as Record<string, number | undefined>
+  const allCount = grouped.reduce((sum, group) => sum + group._count._all, 0)
 
   return (
     <div className="flex flex-col gap-4">
@@ -63,6 +96,25 @@ export default async function CustomersPage({
           <IconPlus />
           New customer
         </Button>
+      </div>
+
+      <div className="flex gap-1 overflow-x-auto">
+        <FilterLink
+          href={customersHref(query)}
+          active={!trust}
+          label="All"
+          count={allCount}
+        />
+        {trustLevels.map((level) => (
+          <FilterLink
+            key={level.value}
+            href={customersHref(query, level.value)}
+            active={trust === level.value}
+            label={level.label}
+            count={counts[level.value] ?? 0}
+            dot={trustDots[level.value]}
+          />
+        ))}
       </div>
 
       {customers.length > 0 ? (
@@ -111,11 +163,39 @@ export default async function CustomersPage({
             </EmptyMedia>
             <EmptyTitle>No customers found</EmptyTitle>
             <EmptyDescription>
-              {query ? "Try a different search." : "No customers yet."}
+              {query || trust ? "Try a different search." : "No customers yet."}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
       )}
     </div>
+  )
+}
+
+function FilterLink({
+  href,
+  active,
+  label,
+  count,
+  dot,
+}: {
+  href: string
+  active: boolean
+  label: string
+  count: number
+  dot?: string
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-sm",
+        active ? "bg-muted font-medium text-foreground" : "text-muted-foreground"
+      )}
+    >
+      {dot && <span className={cn("size-1.5 rounded-full", dot)} />}
+      {label}
+      <span className="tabular-nums">{count}</span>
+    </Link>
   )
 }

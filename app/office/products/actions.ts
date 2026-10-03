@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { flash } from "@/lib/flash"
 import { redirect } from "next/navigation"
 
 import { Prisma } from "@/lib/generated/prisma/client"
@@ -98,6 +99,7 @@ export async function createProduct(
   }
 
   revalidatePath("/office/products")
+  await flash("Product created")
   redirect("/office/products")
 }
 

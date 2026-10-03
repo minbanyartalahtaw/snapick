@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { toast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 
 import { updateOrderStatus } from "./actions"
@@ -52,7 +53,20 @@ export function StatusMenu({
           <DropdownMenuItem
             key={item.value}
             onClick={() =>
-              startTransition(() => updateOrderStatus(orderId, item.value))
+              startTransition(async () => {
+                try {
+                  await updateOrderStatus(orderId, item.value)
+                  toast.add({
+                    type: "success",
+                    title: `Order marked as ${item.label}`,
+                  })
+                } catch {
+                  toast.add({
+                    type: "error",
+                    title: "Could not update the order status",
+                  })
+                }
+              })
             }
           >
             <span className={cn("size-1.5 rounded-full", item.dot)} />

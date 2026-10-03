@@ -3,6 +3,7 @@
 import { useActionState, useCallback, useEffect } from "react"
 
 import { updateProduct } from "./actions"
+import { toast } from "@/components/ui/toast"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -28,7 +29,10 @@ function ProductForm({
   )
 
   useEffect(() => {
-    if (state?.success) onSaved()
+    if (state?.success) {
+      toast.add({ type: "success", title: "Product updated" })
+      onSaved()
+    }
   }, [state, onSaved])
 
   return (
