@@ -1,20 +1,20 @@
 "use client"
 
 import { useState } from "react"
-import { IconPencil } from "@tabler/icons-react"
+import { IconSelector } from "@tabler/icons-react"
 
+import { AvatarPicker } from "@/components/avatar-picker"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { GlassAvatar } from "@/components/glass-avatar"
-import { avatarStyleSeeds, pickerAvatarColors } from "@/lib/avatar"
-import { trustLevels, type TrustLevel } from "@/lib/trust"
+import { getTrustLevel, trustLevels, type TrustLevel } from "@/lib/trust"
 import { cn } from "@/lib/utils"
 
-import { CustomerAvatar, TrustBadge } from "./customer-avatar"
+import { initials, TrustBadge } from "./customer-avatar"
 
+// Profile picture and trust level side by side; each opens its own small picker.
 export function TrustPicker({
   name,
   initialTrust,
@@ -29,122 +29,68 @@ export function TrustPicker({
   const [trust, setTrust] = useState(initialTrust)
   const [seed, setSeed] = useState(initialSeed)
   const [color, setColor] = useState(initialColor)
-  const [tab, setTab] = useState(
-    pickerAvatarColors.some((option) => option.value === initialColor)
-      ? initialColor
-      : pickerAvatarColors[0].value
-  )
+  const [trustOpen, setTrustOpen] = useState(false)
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border bg-card p-4">
+    <div className="flex items-center gap-5 rounded-2xl border bg-card p-4">
       <input type="hidden" name="trust" value={trust} />
       <input type="hidden" name="avatar" value={seed} />
       <input type="hidden" name="avatarColor" value={color} />
-      <div className="flex flex-wrap items-center gap-4">
-        <DropdownMenu>
+      <AvatarPicker
+        seed={seed}
+        color={color}
+        label={initials(name)}
+        onChange={(nextSeed, nextColor) => {
+          setSeed(nextSeed)
+          setColor(nextColor)
+        }}
+      />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <DropdownMenu open={trustOpen} onOpenChange={setTrustOpen}>
           <DropdownMenuTrigger
-            aria-label="Change profile"
-            className="relative rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+            aria-label="Change trust level"
+            className="flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors outline-none hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/30"
           >
-            <CustomerAvatar
-              customer={{ name, code: seed, avatar: seed, avatarColor: color }}
-              className="size-16 text-base"
-            />
-            <span className="absolute -right-0.5 -bottom-0.5 flex size-6 items-center justify-center rounded-full border bg-background text-foreground shadow-sm">
-              <IconPencil className="size-3.5" />
+            <span className="flex min-w-0 flex-col items-start gap-1">
+              <TrustBadge trust={trust} className="px-2.5 py-1 text-xs" />
+              <span className="truncate text-xs text-muted-foreground">
+                {getTrustLevel(trust).description}
+              </span>
             </span>
+            <IconSelector className="size-4 shrink-0 text-muted-foreground" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-auto p-3">
-            <div className="flex flex-col gap-3">
-              <div role="tablist" aria-label="Color" className="flex gap-1.5">
-                {pickerAvatarColors.map((option) => {
-                  const active = option.value === tab
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      onClick={() => setTab(option.value)}
-                      className={cn(
-                        "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30",
-                        active &&
-                          "border-primary bg-background ring-1 ring-primary"
-                      )}
-                    >
-                      <span
-                        className="size-3.5 rounded-full border border-black/10"
-                        style={{ backgroundColor: `#${option.value}` }}
-                      />
-                      <span className="hidden sm:inline">{option.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-              <div
-                role="radiogroup"
-                aria-label="Style"
-                className="grid grid-cols-4 gap-2 sm:grid-cols-8"
-              >
-                {avatarStyleSeeds.map((style) => {
-                  const selected = style === seed && tab === color
-                  return (
-                    <button
-                      key={style}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      onClick={() => {
-                        setSeed(style)
-                        setColor(tab)
-                      }}
-                      className={cn(
-                        "flex items-center justify-center rounded-xl border p-1.5 transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30",
-                        selected && "border-primary ring-1 ring-primary"
-                      )}
-                    >
-                      <GlassAvatar
-                        seed={style}
-                        color={tab}
-                        className="size-10"
-                      />
-                    </button>
-                  )
-                })}
-              </div>
+          <DropdownMenuContent
+            align="start"
+            className="w-(--anchor-width) min-w-56 p-1.5"
+          >
+            <div role="radiogroup" aria-label="Trust" className="flex flex-col">
+              {trustLevels.map((level) => {
+                const selected = level.value === trust
+                return (
+                  <button
+                    key={level.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => {
+                      setTrust(level.value)
+                      setTrustOpen(false)
+                    }}
+                    className={cn(
+                      "flex flex-col items-start gap-1 rounded-lg px-2.5 py-2 text-left transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30",
+                      selected && "bg-muted"
+                    )}
+                  >
+                    <TrustBadge trust={level.value} />
+                    <span className="text-xs text-muted-foreground">
+                      {level.description}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium">Trust</p>
-        <div
-          role="radiogroup"
-          aria-label="Trust"
-          className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-        >
-          {trustLevels.map((level) => {
-            const selected = level.value === trust
-            return (
-              <button
-                key={level.value}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                onClick={() => setTrust(level.value)}
-                className={cn(
-                  "flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-colors outline-none hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/30",
-                  selected && "border-primary bg-muted/50 ring-1 ring-primary"
-                )}
-              >
-                <TrustBadge trust={level.value} />
-                <span className="text-[11px] leading-tight text-muted-foreground">
-                  {level.description}
-                </span>
-              </button>
-            )
-          })}
-        </div>
       </div>
     </div>
   )

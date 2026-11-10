@@ -3,6 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { IconPencil } from "@tabler/icons-react"
 
+import { BreadcrumbLabel } from "@/components/breadcrumb-label"
 import { BackButton } from "@/components/back-button"
 import { Badge } from "@/components/ui/badge"
 import type { DeliveryStatus } from "@/lib/generated/prisma/client"
@@ -59,7 +60,12 @@ export default async function CustomerPage({ params }: Props) {
       day: "2-digit",
     }).format(date)
 
-  const details: { label: string; value: string | null; mono?: boolean; fallback?: boolean }[] = [
+  const details: {
+    label: string
+    value: string | null
+    mono?: boolean
+    fallback?: boolean
+  }[] = [
     { label: "Name", value: customer.name },
     { label: "Mobile", value: customer.phone, mono: true },
     { label: "City", value: customer.city },
@@ -71,17 +77,30 @@ export default async function CustomerPage({ params }: Props) {
   const stats = [
     { label: "Orders", value: String(customer.orders.length) },
     { label: "Spent", value: formatKyats(totalSpent) },
-    { label: "Last order", value: lastOrder ? formatDay(lastOrder.placedAt) : "—" },
+    {
+      label: "Last order",
+      value: lastOrder ? formatDay(lastOrder.placedAt) : "—",
+    },
   ]
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
-      <BackButton fallback="/office/customers" />
+      <BreadcrumbLabel segment={customer.uid} label={customer.code} />
+      <div className="flex items-center justify-between">
+        <BackButton fallback="/office/customers" />
+        <Link
+          href={`/office/customers/${customer.uid}/edit`}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/50"
+        >
+          <IconPencil className="size-3.5" />
+          Edit
+        </Link>
+      </div>
 
       <div className="overflow-hidden rounded-2xl border bg-card">
-        <div className="flex items-center gap-4 p-5">
+        <div className="flex items-start gap-4 p-5">
           <CustomerAvatar customer={customer} className="size-14 text-base" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1 self-center">
             <h1 className="truncate text-lg font-semibold tracking-tight">
               {customer.name}
             </h1>
@@ -89,9 +108,9 @@ export default async function CustomerPage({ params }: Props) {
               <p className="inline-flex rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs text-muted-foreground">
                 {customer.code}
               </p>
-              <TrustBadge trust={customer.trust} className="py-1" />
             </div>
           </div>
+          <TrustBadge trust={customer.trust} className="shrink-0 py-1" />
         </div>
 
         <div className="grid grid-cols-3 divide-x border-t">
@@ -106,22 +125,8 @@ export default async function CustomerPage({ params }: Props) {
             </div>
           ))}
         </div>
-      </div>
 
-      <div>
-        <div className="mb-2 flex items-center justify-between px-1">
-          <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-            Details
-          </p>
-          <Link
-            href={`/office/customers/${customer.uid}/edit`}
-            className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/50"
-          >
-            <IconPencil className="size-3.5" />
-            Edit
-          </Link>
-        </div>
-        <dl className="divide-y overflow-hidden rounded-2xl border bg-card">
+        <dl className="divide-y border-t">
           {details.map((detail) => (
             <div
               key={detail.label}
@@ -154,18 +159,18 @@ export default async function CustomerPage({ params }: Props) {
                   href={`/office/orders/${order.uid}`}
                   className="flex items-center gap-3 px-4 py-3 text-sm transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50"
                 >
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono font-medium">{order.code}</p>
-                  <p className="font-mono text-xs text-muted-foreground">
-                    {formatDate(order.placedAt)}
-                  </p>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="font-medium tabular-nums">
-                    {formatKyats(order.total)}
-                  </span>
-                  <StatusBadge status={order.status} />
-                </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-mono font-medium">{order.code}</p>
+                    <p className="font-mono text-xs text-muted-foreground">
+                      {formatDate(order.placedAt)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span className="font-medium tabular-nums">
+                      {formatKyats(order.total)}
+                    </span>
+                    <StatusBadge status={order.status} />
+                  </div>
                 </Link>
               </li>
             ))}

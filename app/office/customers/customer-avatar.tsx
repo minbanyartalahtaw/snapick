@@ -8,7 +8,7 @@ function firstGrapheme(word: string) {
   return graphemes.segment(word)[Symbol.iterator]().next().value?.segment ?? ""
 }
 
-function initials(name: string) {
+export function initials(name: string) {
   const words = name.trim().split(/\s+/).filter(Boolean)
   if (words.length > 1 && /^[a-z]/i.test(words[0])) {
     return (firstGrapheme(words[0]) + firstGrapheme(words[1])).toUpperCase()

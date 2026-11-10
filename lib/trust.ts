@@ -27,8 +27,8 @@ export const trustLevels: {
     badgeClassName: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
   },
   {
-    value: "careful",
-    label: "Careful",
+    value: "untrusted",
+    label: "Untrusted",
     description: "Returns, no-shows or unpaid COD",
     badgeClassName: "bg-rose-500/15 text-rose-700 dark:text-rose-300",
   },

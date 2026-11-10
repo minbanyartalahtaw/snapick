@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
+import { BreadcrumbLabel } from "@/components/breadcrumb-label"
 import { BackButton } from "@/components/back-button"
 import { prisma } from "@/lib/prisma"
 
@@ -54,6 +55,7 @@ export default async function EditOrderPage({ params }: Props) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+      <BreadcrumbLabel segment={order.uid} label={order.code} />
       <div className="flex items-center gap-3">
         <BackButton fallback={`/office/orders/${order.uid}`} />
         <h1 className="font-heading text-2xl font-semibold tracking-tight">

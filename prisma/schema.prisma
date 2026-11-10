@@ -25,7 +25,7 @@ enum TrustLevel {
   new
   trusted
   vip
-  careful
+  untrusted
 }
 
 model Admin {

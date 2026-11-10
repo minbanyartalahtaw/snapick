@@ -31,7 +31,7 @@ const trustDots: Record<string, string> = {
   new: "bg-muted-foreground",
   trusted: "bg-emerald-500",
   vip: "bg-amber-500",
-  careful: "bg-rose-500",
+  untrusted: "bg-rose-500",
 }
 
 function customersHref(q: string, trust?: string) {
@@ -98,7 +98,7 @@ export default async function CustomersPage({
         </Button>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto">
+      <div className="no-scrollbar flex gap-1 overflow-x-auto">
         <FilterLink
           href={customersHref(query)}
           active={!trust}

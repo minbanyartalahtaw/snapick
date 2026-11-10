@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
+import { BreadcrumbLabel } from "@/components/breadcrumb-label"
 import { formatStamp } from "@/lib/format"
 import { prisma } from "@/lib/prisma"
 
@@ -32,36 +33,39 @@ export default async function OrderPage({ params }: Props) {
   }
 
   return (
-    <OrderDetailView
-      order={{
-        id: order.id,
-        uid: order.uid,
-        code: order.code,
-        customerCode: order.customerCode,
-        customerUid: order.customer?.uid ?? null,
-        customerName: order.customerName,
-        phone: order.phone,
-        city: order.city,
-        address: order.address,
-        paymentMethod: order.paymentMethod,
-        status: order.status,
-        note: order.note,
-        total: order.total,
-        placedAt: formatStamp(order.placedAt),
-        itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
-        items: order.items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          sku: item.sku,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-        })),
-        events: order.statusEvents.map((event) => ({
-          id: event.id,
-          status: event.status,
-          at: formatStamp(event.changedAt),
-        })),
-      }}
-    />
+    <>
+      <BreadcrumbLabel segment={order.uid} label={order.code} />
+      <OrderDetailView
+        order={{
+          id: order.id,
+          uid: order.uid,
+          code: order.code,
+          customerCode: order.customerCode,
+          customerUid: order.customer?.uid ?? null,
+          customerName: order.customerName,
+          phone: order.phone,
+          city: order.city,
+          address: order.address,
+          paymentMethod: order.paymentMethod,
+          status: order.status,
+          note: order.note,
+          total: order.total,
+          placedAt: formatStamp(order.placedAt),
+          itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
+          items: order.items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            sku: item.sku,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+          })),
+          events: order.statusEvents.map((event) => ({
+            id: event.id,
+            status: event.status,
+            at: formatStamp(event.changedAt),
+          })),
+        }}
+      />
+    </>
   )
 }

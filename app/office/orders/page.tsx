@@ -136,7 +136,7 @@ export default async function OrdersPage({
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+        <div className="no-scrollbar flex min-w-0 flex-1 gap-1 overflow-x-auto">
           <FilterLink
             href={ordersHref({ q: query, view })}
             active={!status}
@@ -184,7 +184,7 @@ export default async function OrdersPage({
               0
             )
             return (
-              <li key={order.id} className="relative rounded-2xl border p-4 transition-colors hover:bg-muted/50">
+              <li key={order.id} className="relative rounded-2xl border bg-muted/40 p-4 transition-colors hover:bg-muted/70">
                 <Link
                   href={`/office/orders/${order.uid}`}
                   aria-label={`${order.code}, ${order.customerName}`}

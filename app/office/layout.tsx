@@ -1,5 +1,6 @@
 import { cookies } from "next/headers"
 
+import { BreadcrumbLabelProvider } from "@/components/breadcrumb-label"
 import { AppSidebar } from "@/components/app-sidebar"
 import { FlashToast } from "@/components/flash-toast"
 import { OfficeHeader } from "@/components/office-header"
@@ -19,14 +20,16 @@ export default async function OfficeLayout({
 
   return (
     <TooltipProvider>
-      <FlashToast />
-      <SidebarProvider defaultOpen={defaultOpen}>
-        <AppSidebar admin={admin} />
-        <SidebarInset>
-          <OfficeHeader />
-          <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
-        </SidebarInset>
-      </SidebarProvider>
+      <BreadcrumbLabelProvider>
+        <FlashToast />
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <AppSidebar admin={admin} />
+          <SidebarInset>
+            <OfficeHeader />
+            <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+          </SidebarInset>
+        </SidebarProvider>
+      </BreadcrumbLabelProvider>
     </TooltipProvider>
   )
 }

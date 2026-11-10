@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
+import { BreadcrumbLabel } from "@/components/breadcrumb-label"
 import { BackButton } from "@/components/back-button"
 import { prisma } from "@/lib/prisma"
 
@@ -29,6 +30,7 @@ export default async function EditCustomerPage({ params }: Props) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+      <BreadcrumbLabel segment={customer.uid} label={customer.code} />
       <BackButton fallback={`/office/customers/${customer.uid}`} />
 
       <div>

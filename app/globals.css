@@ -172,3 +172,11 @@
     }
   }
 }
+
+/* Scrolls, but without a visible scrollbar (e.g. the filter chip rows). */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
