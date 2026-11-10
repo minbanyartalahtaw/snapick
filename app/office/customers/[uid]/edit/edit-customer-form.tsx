@@ -25,11 +25,11 @@ import {
 import { TrustPicker } from "../../trust-picker"
 
 function CustomerFields({
-  code,
+  uid,
   initial,
   pending,
 }: {
-  code: string
+  uid: string
   initial: CustomerFormValues
   pending: boolean
 }) {
@@ -119,7 +119,7 @@ function CustomerFields({
           variant="ghost"
           size="sm"
           nativeButton={false}
-          render={<Link href={`/office/customers/${code}`} />}
+          render={<Link href={`/office/customers/${uid}`} />}
         >
           Cancel
         </Button>
@@ -132,14 +132,16 @@ function CustomerFields({
 }
 
 export function EditCustomerForm({
+  uid,
   code,
   initial,
 }: {
+  uid: string
   code: string
   initial: CustomerFormValues
 }) {
   const [state, formAction, pending] = useActionState(
-    updateCustomer.bind(null, code),
+    updateCustomer.bind(null, uid),
     { values: initial } as CustomerFormState
   )
   const values = state?.values ?? initial
@@ -156,7 +158,7 @@ export function EditCustomerForm({
       />
       <CustomerFields
         key={JSON.stringify(values)}
-        code={code}
+        uid={uid}
         initial={values}
         pending={pending}
       />

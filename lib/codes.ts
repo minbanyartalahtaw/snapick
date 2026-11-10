@@ -1,4 +1,4 @@
-import { randomInt } from "node:crypto"
+import { randomInt, randomUUID } from "node:crypto"
 
 const LETTERS = "ABCDEFGHJKMNPQRSTUVWXYZ"
 
@@ -8,6 +8,11 @@ function randomString(alphabet: string, length: number) {
     result += alphabet[randomInt(alphabet.length)]
   }
   return result
+}
+
+// Unguessable id used in office URLs (32 hex chars, same shape as the DB default).
+export function generateUid() {
+  return randomUUID().replaceAll("-", "")
 }
 
 export function generateOrderCode(date = new Date()) {

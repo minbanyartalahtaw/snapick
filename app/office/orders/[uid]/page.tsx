@@ -6,25 +6,26 @@ import { prisma } from "@/lib/prisma"
 
 import { OrderDetailView } from "./order-detail"
 
-type Props = { params: Promise<{ code: string }> }
+type Props = { params: Promise<{ uid: string }> }
 
-function getOrder(code: string) {
+function getOrder(uid: string) {
   return prisma.order.findUnique({
-    where: { code: decodeURIComponent(code) },
+    where: { uid },
     include: {
       items: { orderBy: { id: "asc" } },
       statusEvents: { orderBy: { changedAt: "asc" } },
+      customer: { select: { uid: true } },
     },
   })
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const order = await getOrder((await params).code)
+  const order = await getOrder((await params).uid)
   return { title: `${order?.code ?? "Order"} | Snapick` }
 }
 
 export default async function OrderPage({ params }: Props) {
-  const order = await getOrder((await params).code)
+  const order = await getOrder((await params).uid)
 
   if (!order) {
     notFound()
@@ -34,8 +35,10 @@ export default async function OrderPage({ params }: Props) {
     <OrderDetailView
       order={{
         id: order.id,
+        uid: order.uid,
         code: order.code,
         customerCode: order.customerCode,
+        customerUid: order.customer?.uid ?? null,
         customerName: order.customerName,
         phone: order.phone,
         city: order.city,

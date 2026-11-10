@@ -122,7 +122,7 @@ export default async function CustomersPage({
           {customers.map((customer) => (
             <li key={customer.id}>
               <Link
-                href={`/office/customers/${customer.code}`}
+                href={`/office/customers/${customer.uid}`}
                 className="flex items-center gap-3 px-4 py-3 transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50"
               >
                 <CustomerAvatar customer={customer} />

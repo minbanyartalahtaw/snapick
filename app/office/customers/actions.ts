@@ -48,7 +48,7 @@ function readCustomerValues(formData: FormData): CustomerFormValues {
 }
 
 export async function updateCustomer(
-  code: string,
+  uid: string,
   _state: CustomerFormState,
   formData: FormData
 ): Promise<CustomerFormState> {
@@ -62,7 +62,7 @@ export async function updateCustomer(
 
   try {
     await prisma.customer.update({
-      where: { code },
+      where: { uid },
       data: {
         name: values.name,
         phone: values.phone,
@@ -85,9 +85,9 @@ export async function updateCustomer(
   }
 
   revalidatePath("/office/customers")
-  revalidatePath(`/office/customers/${code}`)
+  revalidatePath(`/office/customers/${uid}`)
   await flash("Customer updated")
-  redirect(`/office/customers/${code}`)
+  redirect(`/office/customers/${uid}`)
 }
 
 export async function createCustomer(
@@ -114,11 +114,11 @@ export async function createCustomer(
         avatar: values.avatar || null,
         avatarColor: values.avatarColor,
       },
-      select: { code: true },
+      select: { uid: true },
     })
     revalidatePath("/office/customers")
     await flash("Customer created")
-    redirect(`/office/customers/${customer.code}`)
+    redirect(`/office/customers/${customer.uid}`)
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

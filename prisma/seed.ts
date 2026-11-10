@@ -7,7 +7,7 @@ import {
   PaymentMethod,
   PrismaClient,
 } from "../lib/generated/prisma/client"
-import { generateOrderCode } from "../lib/codes"
+import { generateOrderCode, generateUid } from "../lib/codes"
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -644,6 +644,7 @@ async function main() {
     savedCustomers.push(
       await prisma.customer.create({
         data: {
+          uid: generateUid(),
           name: customer.name,
           phone: customer.phone,
           city: customer.city,
@@ -673,6 +674,7 @@ async function main() {
 
     await prisma.order.create({
       data: {
+        uid: generateUid(),
         code: uniqueOrderCode(placedAt),
         customerCode: customer?.code,
         customerName: customer?.name ?? order.walkIn!.name,

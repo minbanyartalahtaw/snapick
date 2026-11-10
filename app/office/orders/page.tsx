@@ -165,6 +165,7 @@ export default async function OrdersPage({
             query={query}
             orders={orders.map((order) => ({
               id: order.id,
+              uid: order.uid,
               code: order.code,
               customerName: order.customerName,
               phone: order.phone,
@@ -185,7 +186,7 @@ export default async function OrdersPage({
             return (
               <li key={order.id} className="relative rounded-2xl border p-4 transition-colors hover:bg-muted/50">
                 <Link
-                  href={`/office/orders/${order.code}`}
+                  href={`/office/orders/${order.uid}`}
                   aria-label={`${order.code}, ${order.customerName}`}
                   className="absolute inset-0 rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
                 />

@@ -44,6 +44,7 @@ model Admin {
 
 model Customer {
   id      Int     @id @default(autoincrement())
+  uid     String  @unique @default(dbgenerated("replace((gen_random_uuid())::text, '-'::text, ''::text)"))
   code    String  @unique @default(dbgenerated("((('SPC-'::text || nextval('customer_code_seq'::regclass)) || substr('ABCDEFGHJKMNPQRSTUVWXYZ'::text, ((floor((random() * (23)::double precision)))::integer + 1), 1)) || substr('ABCDEFGHJKMNPQRSTUVWXYZ'::text, ((floor((random() * (23)::double precision)))::integer + 1), 1))"))
   name    String
   phone   String  @unique
@@ -66,6 +67,7 @@ model Customer {
 model Order {
   id   Int    @id @default(autoincrement())
   code String @unique
+  uid  String @unique @default(dbgenerated("replace((gen_random_uuid())::text, '-'::text, ''::text)"))
 
   customerCode String?   @map("customer_code")
   customer     Customer? @relation(fields: [customerCode], references: [code], onDelete: SetNull, onUpdate: Cascade)

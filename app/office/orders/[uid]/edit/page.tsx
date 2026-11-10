@@ -7,18 +7,22 @@ import { prisma } from "@/lib/prisma"
 import { updateOrder } from "../../actions"
 import { NewOrderForm } from "../../new/new-order-form"
 
-type Props = { params: Promise<{ code: string }> }
+type Props = { params: Promise<{ uid: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const code = decodeURIComponent((await params).code)
-  return { title: `Edit ${code} | Snapick` }
+  const { uid } = await params
+  const order = await prisma.order.findUnique({
+    where: { uid },
+    select: { code: true },
+  })
+  return { title: `Edit ${order?.code ?? "order"} | Snapick` }
 }
 
 export default async function EditOrderPage({ params }: Props) {
-  const code = decodeURIComponent((await params).code)
+  const { uid } = await params
   const [order, customers, products] = await Promise.all([
     prisma.order.findUnique({
-      where: { code },
+      where: { uid },
       include: { items: { orderBy: { id: "asc" } } },
     }),
     prisma.customer.findMany({
@@ -51,7 +55,7 @@ export default async function EditOrderPage({ params }: Props) {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
       <div className="flex items-center gap-3">
-        <BackButton fallback={`/office/orders/${order.code}`} />
+        <BackButton fallback={`/office/orders/${order.uid}`} />
         <h1 className="font-heading text-2xl font-semibold tracking-tight">
           Edit order
         </h1>
@@ -64,7 +68,7 @@ export default async function EditOrderPage({ params }: Props) {
             ? { ...product, name: previous.name, price: previous.price }
             : product
         })}
-        action={updateOrder.bind(null, order.code)}
+        action={updateOrder.bind(null, order.uid)}
         requireStock={false}
         initial={{
           customerCode: order.customerCode ?? "",

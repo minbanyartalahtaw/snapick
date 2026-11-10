@@ -77,7 +77,7 @@ export async function updateOrderStatus(orderId: number, status: string) {
   const next = status as DeliveryStatus
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { status: true, code: true },
+    select: { status: true, uid: true },
   })
   if (!order || order.status === next) return
 
@@ -88,13 +88,13 @@ export async function updateOrderStatus(orderId: number, status: string) {
     }),
   ])
   revalidatePath("/office/orders")
-  revalidatePath(`/office/orders/${order.code}`)
+  revalidatePath(`/office/orders/${order.uid}`)
 }
 
 const payments = new Set<string>(Object.values(PaymentMethod))
 
 export async function updateOrder(
-  code: string,
+  uid: string,
   _state: OrderFormState,
   formData: FormData
 ): Promise<OrderFormState> {
@@ -123,8 +123,8 @@ export async function updateOrder(
   }
 
   const order = await prisma.order.findUnique({
-    where: { code },
-    include: { items: true },
+    where: { uid },
+    include: { items: true, customer: { select: { uid: true } } },
   })
   if (!order) return { error: "Order not found.", values }
 
@@ -136,12 +136,14 @@ export async function updateOrder(
   }
 
   const customerCode = values.customerCode.trim()
+  let newCustomerUid: string | null = null
   if (customerCode) {
     const customer = await prisma.customer.findUnique({
       where: { code: customerCode },
-      select: { code: true },
+      select: { uid: true },
     })
     if (!customer) return { error: "Customer not found.", values }
+    newCustomerUid = customer.uid
   }
 
   const saved = new Map(
@@ -178,13 +180,13 @@ export async function updateOrder(
   })
 
   revalidatePath("/office/orders")
-  revalidatePath(`/office/orders/${order.code}`)
-  if (order.customerCode) revalidatePath(`/office/customers/${order.customerCode}`)
-  if (customerCode && customerCode !== order.customerCode) {
-    revalidatePath(`/office/customers/${customerCode}`)
+  revalidatePath(`/office/orders/${order.uid}`)
+  if (order.customer) revalidatePath(`/office/customers/${order.customer.uid}`)
+  if (newCustomerUid && newCustomerUid !== order.customer?.uid) {
+    revalidatePath(`/office/customers/${newCustomerUid}`)
   }
   await flash("Order updated")
-  redirect(`/office/orders/${order.code}`)
+  redirect(`/office/orders/${order.uid}`)
 }
 
 export async function updateOrderNote(orderId: number, formData: FormData) {
@@ -195,9 +197,9 @@ export async function updateOrderNote(orderId: number, formData: FormData) {
   const order = await prisma.order.update({
     where: { id: orderId },
     data: { note: String(formData.get("note") ?? "").trim() },
-    select: { code: true },
+    select: { uid: true },
   })
-  revalidatePath(`/office/orders/${order.code}`)
+  revalidatePath(`/office/orders/${order.uid}`)
 }
 
 export async function createOrder(
@@ -259,7 +261,7 @@ export async function createOrder(
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       const code = generateOrderCode()
-      await prisma.$transaction(async (tx) => {
+      const created = await prisma.$transaction(async (tx) => {
         for (const item of items) {
           const updated = await tx.product.updateMany({
             where: { id: item.productId, stock: { gte: item.quantity } },
@@ -267,7 +269,8 @@ export async function createOrder(
           })
           if (updated.count !== 1) throw new StockError(item.name)
         }
-        await tx.order.create({
+        return tx.order.create({
+          select: { uid: true },
           data: {
             code,
             customerCode: customerCode || null,
@@ -289,7 +292,7 @@ export async function createOrder(
       revalidatePath("/office/orders")
       revalidatePath("/office/products")
       await flash("Order created")
-      redirect(`/office/orders/${code}`)
+      redirect(`/office/orders/${created.uid}`)
     } catch (error) {
       if (error instanceof StockError) {
         return { error: `Not enough stock for ${error.productName}.`, values }

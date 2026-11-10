@@ -18,6 +18,7 @@ import { StatusMenu } from "./status-menu"
 
 export type OrderTableRow = {
   id: number
+  uid: string
   code: string
   customerName: string
   phone: string
@@ -56,7 +57,7 @@ export function OrdersTable({
             <TableRow
               key={order.id}
               className="cursor-pointer"
-              onClick={() => router.push(`/office/orders/${order.code}`)}
+              onClick={() => router.push(`/office/orders/${order.uid}`)}
             >
               <TableCell className="font-mono font-medium">
                 <span className="inline-flex items-center gap-1.5">

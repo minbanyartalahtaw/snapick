@@ -18,8 +18,10 @@ import { StatusMenu } from "../status-menu"
 
 export type OrderDetail = {
   id: number
+  uid: string
   code: string
   customerCode: string | null
+  customerUid: string | null
   customerName: string
   phone: string
   city: string
@@ -112,7 +114,7 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
             variant="outline"
             size="sm"
             nativeButton={false}
-            render={<Link href={`/office/orders/${order.code}/edit`} />}
+            render={<Link href={`/office/orders/${order.uid}/edit`} />}
           >
             <IconPencil />
             Edit
@@ -160,11 +162,11 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
               </p>
               <p className="mt-2 font-semibold">
                 {order.customerName}
-                {order.customerCode && (
+                {order.customerCode && order.customerUid && (
                   <span data-invoice-hide>
                     {" "}
                     <Link
-                      href={`/office/customers/${order.customerCode}`}
+                      href={`/office/customers/${order.customerUid}`}
                       className="text-xs font-normal text-zinc-400"
                     >
                       {order.customerCode}

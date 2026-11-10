@@ -6,17 +6,21 @@ import { prisma } from "@/lib/prisma"
 
 import { EditCustomerForm } from "./edit-customer-form"
 
-type Props = { params: Promise<{ code: string }> }
+type Props = { params: Promise<{ uid: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const code = decodeURIComponent((await params).code)
-  return { title: `Edit ${code} | Snapick` }
+  const { uid } = await params
+  const customer = await prisma.customer.findUnique({
+    where: { uid },
+    select: { name: true },
+  })
+  return { title: `Edit ${customer?.name ?? "customer"} | Snapick` }
 }
 
 export default async function EditCustomerPage({ params }: Props) {
-  const code = decodeURIComponent((await params).code)
+  const { uid } = await params
   const customer = await prisma.customer.findUnique({
-    where: { code },
+    where: { uid },
   })
 
   if (!customer) {
@@ -25,13 +29,14 @@ export default async function EditCustomerPage({ params }: Props) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
-      <BackButton fallback={`/office/customers/${customer.code}`} />
+      <BackButton fallback={`/office/customers/${customer.uid}`} />
 
       <div>
         <p className="mb-2 px-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
           Details
         </p>
         <EditCustomerForm
+          uid={customer.uid}
           code={customer.code}
           initial={{
             name: customer.name,

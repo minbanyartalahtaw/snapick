@@ -11,17 +11,17 @@ import { prisma } from "@/lib/prisma"
 
 import { CustomerAvatar, TrustBadge } from "../customer-avatar"
 
-type Props = { params: Promise<{ code: string }> }
+type Props = { params: Promise<{ uid: string }> }
 
-function getCustomer(code: string) {
+function getCustomer(uid: string) {
   return prisma.customer.findUnique({
-    where: { code: decodeURIComponent(code) },
+    where: { uid },
     include: { orders: { orderBy: { placedAt: "desc" } } },
   })
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const customer = await getCustomer((await params).code)
+  const customer = await getCustomer((await params).uid)
   return { title: `${customer?.name ?? "Customer"} | Snapick` }
 }
 
@@ -40,7 +40,7 @@ function StatusBadge({ status }: { status: DeliveryStatus }) {
 }
 
 export default async function CustomerPage({ params }: Props) {
-  const customer = await getCustomer((await params).code)
+  const customer = await getCustomer((await params).uid)
 
   if (!customer) {
     notFound()
@@ -114,7 +114,7 @@ export default async function CustomerPage({ params }: Props) {
             Details
           </p>
           <Link
-            href={`/office/customers/${customer.code}/edit`}
+            href={`/office/customers/${customer.uid}/edit`}
             className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/50"
           >
             <IconPencil className="size-3.5" />
@@ -151,7 +151,7 @@ export default async function CustomerPage({ params }: Props) {
             {customer.orders.map((order) => (
               <li key={order.id}>
                 <Link
-                  href={`/office/orders/${order.code}`}
+                  href={`/office/orders/${order.uid}`}
                   className="flex items-center gap-3 px-4 py-3 text-sm transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50"
                 >
                 <div className="min-w-0 flex-1">
