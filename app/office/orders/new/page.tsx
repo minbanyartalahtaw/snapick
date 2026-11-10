@@ -36,7 +36,7 @@ export default async function NewOrderPage() {
   ])
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 xl:max-w-5xl">
       <div className="flex items-center gap-3">
         <BackButton fallback="/office/orders" />
         <h1 className="font-heading text-2xl font-semibold tracking-tight">

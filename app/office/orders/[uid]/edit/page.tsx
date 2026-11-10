@@ -54,7 +54,7 @@ export default async function EditOrderPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 xl:max-w-5xl">
       <BreadcrumbLabel segment={order.uid} label={order.code} />
       <div className="flex items-center gap-3">
         <BackButton fallback={`/office/orders/${order.uid}`} />
