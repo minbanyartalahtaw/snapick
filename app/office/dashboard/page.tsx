@@ -1,22 +1,16 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { IconArrowDownRight, IconArrowUpRight } from "@tabler/icons-react"
+import { IconChevronRight, IconPlus } from "@tabler/icons-react"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { formatKyats } from "@/lib/format"
+import { Button } from "@/components/ui/button"
 import { prisma } from "@/lib/prisma"
 import { cn } from "@/lib/utils"
 
-import { BestSellersChart } from "./best-sellers-chart"
-import { RevenueChart, type RevenueDay } from "./revenue-chart"
-import { Sparkline, type SparkPoint } from "./sparkline"
-import { StatusChart } from "./status-chart"
+import {
+  OverviewPanel,
+  type OverviewDay,
+  type OverviewMetric,
+} from "./overview-panel"
 
 export const metadata: Metadata = {
   title: "Dashboard | Snapick",
@@ -32,6 +26,25 @@ const STATUSES = [
   "delivered",
   "cancelled",
 ] as const
+
+const STATUS_STYLES: Record<
+  (typeof STATUSES)[number],
+  { label: string; dot: string }
+> = {
+  pending: { label: "Pending", dot: "bg-rose-500" },
+  packing: { label: "Packing", dot: "bg-violet-500" },
+  shipped: { label: "Shipped", dot: "bg-amber-500" },
+  delivered: { label: "Delivered", dot: "bg-emerald-500" },
+  cancelled: { label: "Cancelled", dot: "bg-zinc-400" },
+}
+
+const amount = new Intl.NumberFormat("en-US")
+
+const rangeDay = new Intl.DateTimeFormat("en-US", {
+  timeZone: "Asia/Yangon",
+  month: "short",
+  day: "numeric",
+})
 
 const yangonDay = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Yangon",
@@ -96,7 +109,7 @@ export default async function DashboardPage() {
     ? Math.round(revenue / currentSales.length)
     : 0
 
-  const days = new Map<string, RevenueDay>()
+  const days = new Map<string, Omit<OverviewDay, "average">>()
   for (let i = 0; i < RANGE_DAYS; i++) {
     const date = yangonDay.format(new Date(rangeStart.getTime() + i * DAY_MS))
     days.set(date, { date, revenue: 0, orders: 0 })
@@ -126,188 +139,212 @@ export default async function DashboardPage() {
     ? Math.round(previousRevenue / previousSales.length)
     : 0
 
-  const daily = [...days.values()]
+  const daily: OverviewDay[] = [...days.values()].map((day) => ({
+    ...day,
+    average: day.orders ? Math.round(day.revenue / day.orders) : null,
+  }))
   const pending =
     openOrders.find((row) => row.status === "pending")?._count ?? 0
   const packing =
     openOrders.find((row) => row.status === "packing")?._count ?? 0
+  const toFulfil = pending + packing
+  const rangeLabel = `${rangeDay.format(rangeStart)} – ${rangeDay.format(todayStart)}`
+  const topQuantity = topProducts[0]?.quantity ?? 0
 
-  const stats: {
-    label: string
-    value: string
-    change: number | null
-    spark: SparkPoint[]
-    unit: "kyats" | "count"
-  }[] = [
+  const metrics: OverviewMetric[] = [
     {
+      key: "revenue",
       label: "Revenue",
-      value: formatKyats(revenue),
+      value: amount.format(revenue),
+      unit: "Ks",
       change: percentChange(revenue, previousRevenue),
-      spark: daily.map((day) => ({ date: day.date, value: day.revenue })),
-      unit: "kyats",
     },
     {
+      key: "orders",
       label: "Orders",
-      value: String(currentSales.length),
+      value: amount.format(currentSales.length),
       change: percentChange(currentSales.length, previousSales.length),
-      spark: daily.map((day) => ({ date: day.date, value: day.orders })),
-      unit: "count",
     },
     {
-      label: "Average order",
-      value: formatKyats(averageOrder),
+      key: "average",
+      label: "Avg. order",
+      value: amount.format(averageOrder),
+      unit: "Ks",
       change: percentChange(averageOrder, previousAverage),
-      // Days without orders have no average, so leave a gap instead of a dip to 0.
-      spark: daily.map((day) => ({
-        date: day.date,
-        value: day.orders ? Math.round(day.revenue / day.orders) : null,
-      })),
-      unit: "kyats",
     },
   ]
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.label} size="sm" className="pb-0">
-            <CardHeader>
-              <CardDescription>{stat.label}</CardDescription>
-              <CardTitle className="text-xl font-semibold tabular-nums sm:text-2xl">
-                {stat.value}
-              </CardTitle>
-              <ChangeNote change={stat.change} />
-            </CardHeader>
-            <div className="mt-auto">
-              <Sparkline
-                data={stat.spark}
-                label={stat.label}
-                unit={stat.unit}
-              />
-            </div>
-          </Card>
-        ))}
-
-        <Card size="sm">
-          <CardHeader>
-            <CardDescription>
-              <Link
-                href="/office/orders?status=pending"
-                className="hover:text-foreground"
-              >
-                To fulfil
-              </Link>
-            </CardDescription>
-            <CardTitle className="text-xl font-semibold tabular-nums sm:text-2xl">
-              {pending + packing}
-            </CardTitle>
-            <p className="text-xs text-muted-foreground">Waiting to ship</p>
-          </CardHeader>
-          <CardContent className="mt-auto flex flex-col gap-2.5">
-            <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-muted">
-              {pending > 0 && (
-                <div className="bg-rose-500" style={{ flexGrow: pending }} />
-              )}
-              {packing > 0 && (
-                <div className="bg-violet-500" style={{ flexGrow: packing }} />
-              )}
-            </div>
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-rose-500" />
-                <span className="text-foreground tabular-nums">
-                  {pending}
-                </span>{" "}
-                pending
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-violet-500" />
-                <span className="text-foreground tabular-nums">
-                  {packing}
-                </span>{" "}
-                packing
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <p className="text-sm text-muted-foreground">
+          {toFulfil > 0 ? (
+            <>
+              <span className="font-semibold text-foreground tabular-nums">
+                {toFulfil}
+              </span>{" "}
+              {toFulfil === 1 ? "order" : "orders"} to fulfil
+            </>
+          ) : (
+            "Nothing waiting to ship"
+          )}
+        </p>
+        {toFulfil > 0 && (
+          <div className="order-last flex w-full items-center gap-1.5 sm:order-none sm:w-auto">
+            <FulfilLink status="pending" count={pending} />
+            <FulfilLink status="packing" count={packing} />
+          </div>
+        )}
+        <Button
+          className="ml-auto shrink-0"
+          nativeButton={false}
+          render={<Link href="/office/orders/new" />}
+        >
+          <IconPlus />
+          New order
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Daily revenue</CardTitle>
-          <CardDescription>
-            Last {RANGE_DAYS} days · excludes cancelled and refunded
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="px-2 sm:px-(--card-spacing)">
-          <RevenueChart data={[...days.values()]} />
-        </CardContent>
-      </Card>
+      <OverviewPanel
+        metrics={metrics}
+        data={daily}
+        rangeDays={RANGE_DAYS}
+        rangeLabel={rangeLabel}
+      />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Orders by status</CardTitle>
-            <CardDescription>{current.length} orders placed</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <StatusChart data={statusCounts} />
-          </CardContent>
-        </Card>
+        <Panel
+          title="Orders by status"
+          note={`${current.length} placed · last ${RANGE_DAYS} days`}
+        >
+          <div className="px-4 pb-4 sm:px-5">
+            <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-muted">
+              {statusCounts.map(
+                (row) =>
+                  row.count > 0 && (
+                    <div
+                      key={row.status}
+                      className={STATUS_STYLES[row.status].dot}
+                      style={{ flexGrow: row.count }}
+                    />
+                  )
+              )}
+            </div>
+          </div>
+          <ul className="divide-y border-t">
+            {statusCounts.map((row) => (
+              <li
+                key={row.status}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm sm:px-5"
+              >
+                <span
+                  className={cn(
+                    "size-2 shrink-0 rounded-full",
+                    STATUS_STYLES[row.status].dot
+                  )}
+                />
+                <span className="min-w-0 flex-1 truncate">
+                  {STATUS_STYLES[row.status].label}
+                </span>
+                <span className="font-medium tabular-nums">{row.count}</span>
+                <span className="w-10 text-right text-xs text-muted-foreground tabular-nums">
+                  {current.length
+                    ? Math.round((row.count / current.length) * 100)
+                    : 0}
+                  %
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Best sellers</CardTitle>
-            <CardDescription>
-              Pieces sold in the last {RANGE_DAYS} days
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {topProducts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No sales yet.</p>
-            ) : (
-              <>
-                <BestSellersChart data={topProducts} />
-                {bestSellers.length > TOP_PRODUCTS && (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Top {TOP_PRODUCTS} of {bestSellers.length} products sold
-                  </p>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <Panel
+          title="Best sellers"
+          note={`Pieces sold · last ${RANGE_DAYS} days`}
+        >
+          {topProducts.length === 0 ? (
+            <p className="border-t px-4 py-6 text-center text-sm text-muted-foreground sm:px-5">
+              No sales yet.
+            </p>
+          ) : (
+            <>
+              <ol className="divide-y border-t">
+                {topProducts.map((product, index) => (
+                  <li
+                    key={product.name}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm sm:px-5"
+                  >
+                    <span className="w-4 shrink-0 text-xs text-muted-foreground tabular-nums">
+                      {index + 1}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">
+                      {product.name}
+                    </span>
+                    <span className="hidden h-1.5 w-28 shrink-0 overflow-hidden rounded-full bg-muted sm:block xl:w-40">
+                      <span
+                        className="block h-full rounded-full bg-foreground/60"
+                        style={{
+                          width: `${(product.quantity / topQuantity) * 100}%`,
+                        }}
+                      />
+                    </span>
+                    <span className="w-8 shrink-0 text-right font-medium tabular-nums">
+                      {product.quantity}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              {bestSellers.length > TOP_PRODUCTS && (
+                <p className="border-t px-4 py-2.5 text-xs text-muted-foreground sm:px-5">
+                  Top {TOP_PRODUCTS} of {bestSellers.length} products sold
+                </p>
+              )}
+            </>
+          )}
+        </Panel>
       </div>
     </div>
   )
 }
 
-function ChangeNote({ change }: { change: number | null }) {
-  if (change === null) {
-    return (
-      <p className="text-xs text-muted-foreground">Last {RANGE_DAYS} days</p>
-    )
-  }
-  const up = change >= 0
+function FulfilLink({
+  status,
+  count,
+}: {
+  status: "pending" | "packing"
+  count: number
+}) {
   return (
-    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+    <Link
+      href={`/office/orders?status=${status}`}
+      className="inline-flex h-7 items-center gap-1.5 rounded-full border pr-1.5 pl-2.5 text-sm transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30"
+    >
       <span
-        className={cn(
-          "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium tabular-nums",
-          up
-            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-            : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
-        )}
-      >
-        {up ? (
-          <IconArrowUpRight className="size-3" />
-        ) : (
-          <IconArrowDownRight className="size-3" />
-        )}
-        {up ? "+" : ""}
-        {change}%
-      </span>
-      vs prev. {RANGE_DAYS}d
-    </p>
+        className={cn("size-1.5 rounded-full", STATUS_STYLES[status].dot)}
+      />
+      {STATUS_STYLES[status].label}
+      <span className="font-medium tabular-nums">{count}</span>
+      <IconChevronRight className="size-3.5 text-muted-foreground" />
+    </Link>
+  )
+}
+
+function Panel({
+  title,
+  note,
+  children,
+}: {
+  title: string
+  note: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="overflow-hidden rounded-2xl border bg-card">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 px-4 pt-4 pb-3.5 sm:px-5">
+        <h2 className="text-sm font-medium">{title}</h2>
+        <p className="text-xs text-muted-foreground">{note}</p>
+      </div>
+      {children}
+    </section>
   )
 }
